@@ -1,5 +1,5 @@
 import type { Token } from '../QueryLexer';
-import { ASTBuilder } from '../AstBuilder';
+import { ASTBuilder } from '../ASTBuilder';
 import { TokenTypes } from '../QueryLexer';
 import { TokenStream } from './TokenStream';
 

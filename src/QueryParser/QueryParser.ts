@@ -1,6 +1,6 @@
 import type { AddErrorProps, IQueryParser } from './QueryParser.interface';
 import type { ParseError, ParseResult, ParserOptions, TokenContext } from './types';
-import { ASTBuilder, type Expression } from '../AstBuilder';
+import { ASTBuilder, type Expression } from '../ASTBuilder';
 import { BooleanOperators, Comparators, type ComparatorValues } from '../common/constants';
 import { QueryLexer, TokenTypes } from '../QueryLexer';
 import { TokenStream } from '../TokenStream';
