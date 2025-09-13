@@ -8,6 +8,7 @@ type BooleanOperatorKeys = keyof TypeofBooleanOperator;
 export type BooleanOperatorValues = TypeofBooleanOperator[BooleanOperatorKeys];
 
 export const Comparators = {
+  ':': ':',
   '>': '>',
   '<': '<',
   '>=': '>=',

@@ -1,6 +1,6 @@
 import type { BooleanOperatorValues, ComparatorValues } from '../common/constants';
 import type { Position } from '../common/types';
-import type { AstTypes } from './logic/constants';
+import { AstTypes } from './logic/constants';
 
 export interface ASTNode {
   type: string;
