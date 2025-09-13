@@ -2,8 +2,38 @@
   "name": "create-query-language",
   "private": true,
   "version": "0.0.3",
-  "author": "talkohavy@gmail.com",
+  "description": "A flexible TypeScript library for parsing and building query languages with support for lexical analysis, AST generation, and token stream processing",
+  "keywords": [
+    "query",
+    "parser",
+    "lexer",
+    "ast",
+    "typescript",
+    "query-language",
+    "token",
+    "search",
+    "filter",
+    "expression",
+    "boolean-logic",
+    "parsing"
+  ],
+  "author": {
+    "name": "Tal Kohavy",
+    "email": "talkohavy@gmail.com",
+    "url": "https://github.com/talkohavy"
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/talkohavy/create-query-language.git"
+  },
+  "bugs": {
+    "url": "https://github.com/talkohavy/create-query-language/issues"
+  },
+  "homepage": "https://github.com/talkohavy/create-query-language#readme",
+  "main": "./index.cjs.cjs",
+  "module": "./index.esm.mjs",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -22,7 +52,8 @@
     "lint:fix": "eslint --fix",
     "tsc": "tsc -p tsconfig.json",
     "build": "node ./build.config.mjs",
-    "test": "jest"
+    "test": "jest",
+    "test:cov": "jest --coverage"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
