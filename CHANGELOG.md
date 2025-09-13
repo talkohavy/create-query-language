@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.3
+
+### Patch Changes
+
+- QueryParserOptions
+
 ## 1.0.2
 
 ### Patch Changes

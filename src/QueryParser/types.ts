@@ -16,7 +16,7 @@ export type ParseError = {
   recoverable: boolean;
 };
 
-export type ParserOptions = {
+export type QueryParserOptions = {
   maxErrors: number;
 };
 
