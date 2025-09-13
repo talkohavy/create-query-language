@@ -1,5 +1,5 @@
 import type { AddErrorProps, IQueryParser } from './QueryParser.interface';
-import type { ParseError, ParseResult, ParserOptions, TokenContext } from './types';
+import type { ParseError, ParseResult, QueryParserOptions, TokenContext } from './types';
 import { ASTBuilder, type Expression } from '../ASTBuilder';
 import { BooleanOperators, Comparators, type ComparatorValues } from '../common/constants';
 import { QueryLexer, TokenTypes } from '../QueryLexer';
@@ -10,10 +10,10 @@ export class QueryParser implements IQueryParser {
   private tokenStream: TokenStream = new TokenStream([]);
   private errors: ParseError[] = [];
   private openParenthesisCount = 0;
-  private options: ParserOptions;
+  private options: QueryParserOptions;
   private queryLexer: QueryLexer;
 
-  constructor(options: Partial<ParserOptions> = {}) {
+  constructor(options: Partial<QueryParserOptions> = {}) {
     this.options = { maxErrors: 10, ...options };
     this.queryLexer = new QueryLexer();
   }

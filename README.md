@@ -133,7 +133,7 @@ class QueryParser {
   parse(input: string): ParseResult;
 }
 
-interface ParseResult {
+type ParseResult {
   success: boolean;
   ast?: QueryExpression;
   errors: ParseError[];
@@ -151,17 +151,6 @@ interface QueryParserOptions {
 }
 
 const parser = new QueryParser({ maxErrors: 5 });
-```
-
-### Lexer Options
-
-```typescript
-interface QueryLexerOptions {
-  // Lexer configuration options
-  // Add custom options as needed
-}
-
-const lexer = new QueryLexer(/* options */);
 ```
 
 ## 📊 Coverage
