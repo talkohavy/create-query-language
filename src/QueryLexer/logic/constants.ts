@@ -7,7 +7,7 @@ export const TokenTypes = {
   Comparator: 'COMPARATOR',
   Colon: 'COLON',
   QuotedString: 'QUOTED_STRING',
-  Identifier: 'IDENTIFIER', // <--- Either key or value that is pure alphanumeric (with underscores and hyphens)
+  Identifier: 'IDENTIFIER', // <--- Either key or value that is pure alphanumeric (with underscores)
   Invalid: 'INVALID',
   EOF: 'EOF',
 } as const;
