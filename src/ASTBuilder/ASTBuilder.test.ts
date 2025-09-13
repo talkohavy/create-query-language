@@ -6,7 +6,7 @@ describe('ASTBuilder', () => {
     test('should create a query node with correct structure', () => {
       const position = ASTBuilder.createPosition(0, 10);
       const key = ASTBuilder.createKey('status', position);
-      const comparator = ASTBuilder.createComparator(':', position);
+      const comparator = ASTBuilder.createComparator('<', position);
       const value = ASTBuilder.createValue('active', position);
       const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, position);
 
@@ -24,12 +24,12 @@ describe('ASTBuilder', () => {
       const operator = ASTBuilder.createOperator('AND', position);
 
       const leftKey = ASTBuilder.createKey('status', position);
-      const leftComparator = ASTBuilder.createComparator(':', position);
+      const leftComparator = ASTBuilder.createComparator('<', position);
       const leftValue = ASTBuilder.createValue('active', position);
       const leftCondition = ASTBuilder.createCondition(leftKey, leftComparator, leftValue, 0, 1, 0, position);
 
       const rightKey = ASTBuilder.createKey('role', position);
-      const rightComparator = ASTBuilder.createComparator(':', position);
+      const rightComparator = ASTBuilder.createComparator('<', position);
       const rightValue = ASTBuilder.createValue('admin', position);
       const rightCondition = ASTBuilder.createCondition(rightKey, rightComparator, rightValue, 0, 1, 0, position);
 
@@ -57,10 +57,10 @@ describe('ASTBuilder', () => {
   describe('createComparator', () => {
     test('should create a comparator node with colon', () => {
       const position = ASTBuilder.createPosition(6, 7);
-      const comparator = ASTBuilder.createComparator(':', position);
+      const comparator = ASTBuilder.createComparator('<', position);
 
       expect(comparator.type).toBe(AstTypes.Comparator);
-      expect(comparator.value).toBe(':');
+      expect(comparator.value).toBe('<');
       expect(comparator.position).toBe(position);
     });
 
@@ -74,7 +74,7 @@ describe('ASTBuilder', () => {
     });
 
     test('should create comparator nodes for all supported operators', () => {
-      const operators = [':', '==', '!=', '<', '>', '<=', '>='] as const;
+      const operators = ['<', '==', '!=', '<', '>', '<=', '>='] as const;
 
       operators.forEach((op) => {
         const position = ASTBuilder.createPosition(0, op.length);
@@ -130,7 +130,7 @@ describe('ASTBuilder', () => {
     test('should create a condition node with all components', () => {
       const position = ASTBuilder.createPosition(0, 15);
       const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(6, 7));
+      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
       const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
 
       const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, position);
@@ -148,7 +148,7 @@ describe('ASTBuilder', () => {
     test('should create a condition node with custom spacing', () => {
       const position = ASTBuilder.createPosition(0, 20);
       const key = ASTBuilder.createKey('name', ASTBuilder.createPosition(0, 4));
-      const comparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(5, 6));
+      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(5, 6));
       const value = ASTBuilder.createValue('test', ASTBuilder.createPosition(9, 13));
 
       const condition = ASTBuilder.createCondition(key, comparator, value, 1, 2, 3, position);
@@ -163,7 +163,7 @@ describe('ASTBuilder', () => {
     test('should create a group node', () => {
       const position = ASTBuilder.createPosition(0, 17);
       const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(1, 7));
-      const comparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(7, 8));
+      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(7, 8));
       const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(9, 15));
       const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(1, 15));
 
@@ -240,7 +240,7 @@ describe('ASTBuilder', () => {
   describe('traverseAST', () => {
     test('should traverse a simple condition', () => {
       const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(6, 7));
+      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
       const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
       const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(0, 14));
 
@@ -256,7 +256,7 @@ describe('ASTBuilder', () => {
 
     test('should traverse a group expression', () => {
       const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(1, 7));
-      const comparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(7, 8));
+      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(7, 8));
       const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(9, 15));
       const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(1, 15));
       const group = ASTBuilder.createGroup(condition, ASTBuilder.createPosition(0, 16));
@@ -273,7 +273,7 @@ describe('ASTBuilder', () => {
 
     test('should traverse a boolean expression', () => {
       const leftKey = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const leftComparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(6, 7));
+      const leftComparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
       const leftValue = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
       const leftCondition = ASTBuilder.createCondition(
         leftKey,
@@ -286,7 +286,7 @@ describe('ASTBuilder', () => {
       );
 
       const rightKey = ASTBuilder.createKey('role', ASTBuilder.createPosition(19, 23));
-      const rightComparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(23, 24));
+      const rightComparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(23, 24));
       const rightValue = ASTBuilder.createValue('admin', ASTBuilder.createPosition(25, 30));
       const rightCondition = ASTBuilder.createCondition(
         rightKey,
@@ -313,20 +313,12 @@ describe('ASTBuilder', () => {
         return true;
       });
 
-      expect(visitedNodes).toEqual([
-        'boolean',
-        'key',
-        'comparator',
-        'value',
-        'key',
-        'comparator',
-        'value',
-      ]);
+      expect(visitedNodes).toEqual(['boolean', 'key', 'comparator', 'value', 'key', 'comparator', 'value']);
     });
 
     test('should stop traversal when callback returns false', () => {
       const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(6, 7));
+      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
       const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
       const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(0, 14));
 
@@ -342,7 +334,7 @@ describe('ASTBuilder', () => {
 
     test('should provide parent node information', () => {
       const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator(':', ASTBuilder.createPosition(6, 7));
+      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
       const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
       const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(0, 14));
 
