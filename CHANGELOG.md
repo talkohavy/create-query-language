@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.2
+
+### Patch Changes
+
+- README.md - smaller image
+
 ## 1.0.1
 
 ### Patch Changes
