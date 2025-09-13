@@ -1,7 +1,7 @@
 # Create Query Language
 
 <p align="center">
-  <img src="https://i.ibb.co/67g7Sn41/create-query-language.png" width="250" alt="create-query-language logo" />
+  <img src="https://i.ibb.co/8LLRHz6c/create-query-language.png" width="250" alt="create-query-language logo" />
 </p>
 
 A flexible TypeScript library for parsing and building query languages with support for lexical analysis, AST generation, and token stream processing.
