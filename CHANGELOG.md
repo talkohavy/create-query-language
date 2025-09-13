@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.0
+
+### Major Changes
+
+- First Release.
+
 ## 0.0.3
 
 ### Patch Changes
