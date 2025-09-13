@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.1
+
+### Patch Changes
+
+- README.md updated
+
 ## 1.0.0
 
 ### Major Changes
