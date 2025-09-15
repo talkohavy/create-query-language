@@ -298,4 +298,14 @@ export class QueryLexer {
   private isPartOfIdentifier(char: string): boolean {
     return /[a-zA-Z0-9_]/.test(char);
   }
+
+  static getTokenAtPosition(tokens: Token[], position: number): Token | null {
+    for (const token of tokens) {
+      if (position > token.position.start && position <= token.position.end) {
+        return token;
+      }
+    }
+
+    return null;
+  }
 }

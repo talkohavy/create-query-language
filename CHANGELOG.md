@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.5
+
+### Patch Changes
+
+- added getTokenAtPosition static function to QueryLexer.
+
 ## 1.0.4
 
 ### Patch Changes
