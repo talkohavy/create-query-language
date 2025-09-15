@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.6
+
+### Patch Changes
+
+- QueryParser enhance: Value token also needs a key reference in its token.
+
 ## 1.0.5
 
 ### Patch Changes
