@@ -1,7 +1,7 @@
 {
   "name": "create-query-language",
   "private": true,
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A flexible TypeScript library for parsing and building query languages with support for lexical analysis, AST generation, and token stream processing",
   "keywords": [
     "query",
