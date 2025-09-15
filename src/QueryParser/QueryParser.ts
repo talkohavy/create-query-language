@@ -327,7 +327,7 @@ export class QueryParser implements IQueryParser {
     }
 
     const valueToken = this.tokenStream.consume()!;
-    valueToken.context = { expectedTokens: [ContextTypes.Value] };
+    valueToken.context = { expectedTokens: [ContextTypes.Value], key: keyToken.value };
 
     const context: TokenContext = { expectedTokens: [ContextTypes.LogicalOperator] };
     if (this.openParenthesisCount > 0) {
