@@ -266,7 +266,8 @@ export class QueryParser implements IQueryParser {
     const currentToken = this.tokenStream.current()!;
 
     const isValidKeyToken =
-      this.tokenStream.isCurrentAMatchWith(TokenTypes.Identifier) && !/^\d/.test(currentToken.value);
+      (this.tokenStream.isCurrentAMatchWith(TokenTypes.Identifier) && !/^\d/.test(currentToken.value)) ||
+      this.tokenStream.isCurrentAMatchWith(TokenTypes.QuotedString);
 
     if (!isValidKeyToken) {
       this.addError({
