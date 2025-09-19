@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.7
+
+### Patch Changes
+
+- QueryParser: a key can now also be a quoted string.
+
 ## 1.0.6
 
 ### Patch Changes
