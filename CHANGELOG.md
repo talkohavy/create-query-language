@@ -1,5 +1,13 @@
 # create-query-language
 
+## 1.0.8
+
+### Patch Changes
+
+- Added support to NOT operator.
+- Exporting SpecialChars constant from QueryLexer.
+- Now exporting SpecialChars as constant.
+
 ## 1.0.7
 
 ### Patch Changes

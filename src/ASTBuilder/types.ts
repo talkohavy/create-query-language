@@ -54,4 +54,9 @@ export interface GroupExpression extends ASTNode {
   expression: Expression;
 }
 
-export type Expression = QueryExpression | BooleanExpression | ConditionExpression | GroupExpression;
+export interface NotExpression extends ASTNode {
+  type: typeof AstTypes.Not;
+  expression: Expression;
+}
+
+export type Expression = QueryExpression | BooleanExpression | ConditionExpression | GroupExpression | NotExpression;

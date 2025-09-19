@@ -254,7 +254,18 @@ export class QueryLexer {
   }
 
   private scanLogicalOperator(startPosition: number, uppercaseValue: string, tokenValue: string): Token {
-    const logicalOperatorTokenType = uppercaseValue === TokenTypes.AND ? TokenTypes.AND : TokenTypes.OR;
+    let logicalOperatorTokenType: TokenTypeValues;
+
+    if (uppercaseValue === TokenTypes.AND) {
+      logicalOperatorTokenType = TokenTypes.AND;
+    } else if (uppercaseValue === TokenTypes.OR) {
+      logicalOperatorTokenType = TokenTypes.OR;
+    } else if (uppercaseValue === TokenTypes.NOT) {
+      logicalOperatorTokenType = TokenTypes.NOT;
+    } else {
+      // This shouldn't happen, but fallback to Identifier
+      logicalOperatorTokenType = TokenTypes.Identifier;
+    }
 
     const logicalOperatorToken = this.createToken(logicalOperatorTokenType, tokenValue, startPosition, this.position);
 

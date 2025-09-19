@@ -7,6 +7,7 @@ export const ContextTypes = {
   Colon: 'colon',
   LeftParenthesis: 'left-parenthesis',
   RightParenthesis: 'right-parenthesis',
+  Not: 'not',
 } as const;
 
 type TypeOfContextType = typeof ContextTypes;
@@ -18,6 +19,7 @@ export const ERROR_MESSAGES = {
   EXPECTED_COMPARATOR: 'Expected comparator (i.e. :,<,>,=) after key',
   EXPECTED_VALUE: 'Expected value after comparator',
   EXPECTED_EXPRESSION_AFTER_AND: "Expected expression after 'AND'",
+  EXPECTED_EXPRESSION_AFTER_NOT: "Expected expression after 'NOT'",
   EXPECTED_EXPRESSION_IN_PARENTHESES: 'Expected expression inside parentheses',
   EXPECTED_OPERATOR: "Expected 'AND' or 'OR'",
   EXPECTED_CLOSING_PARENTHESES: 'Expected closing parenthesis',

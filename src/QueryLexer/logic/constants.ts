@@ -4,6 +4,7 @@ export const TokenTypes = {
   RightParenthesis: 'RIGHT_PARENTHESIS',
   AND: 'AND',
   OR: 'OR',
+  NOT: 'NOT',
   Comparator: 'COMPARATOR',
   Colon: 'COLON',
   QuotedString: 'QUOTED_STRING',

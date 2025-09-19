@@ -9,6 +9,7 @@ import type {
   GroupExpression,
   KeyNode,
   LogicalOperatorNode,
+  NotExpression,
   QueryExpression,
   ValueNode,
 } from './types';
@@ -94,6 +95,14 @@ export class ASTBuilder {
   static createGroup(expression: Expression, position: Position): GroupExpression {
     return {
       type: AstTypes.Group,
+      expression,
+      position,
+    };
+  }
+
+  static createNotExpression(expression: Expression, position: Position): NotExpression {
+    return {
+      type: AstTypes.Not,
       expression,
       position,
     };

@@ -39,13 +39,13 @@ describe('QueryParser', () => {
 
     test('should parse different comparators', () => {
       const comparators = [':', '==', '!=', '>', '<', '>=', '<='];
-      
-      comparators.forEach(comp => {
+
+      comparators.forEach((comp) => {
         const result = parser.parse(`field ${comp} value`);
-        
+
         expect(result.success).toBe(true);
         expect(result.ast?.expression.type).toBe('condition');
-        
+
         if (result.ast?.expression.type === 'condition') {
           expect(result.ast.expression.comparator.value).toBe(comp);
         }
@@ -167,6 +167,135 @@ describe('QueryParser', () => {
 
       expect(result.success).toBe(true);
       expect(result.ast?.expression.type).toBe('boolean');
+    });
+  });
+
+  describe('NOT expressions', () => {
+    test('should parse simple NOT condition', () => {
+      const result = parser.parse('NOT status: active');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('not');
+
+      if (result.ast?.expression.type === 'not') {
+        expect(result.ast.expression.expression.type).toBe('condition');
+        if (result.ast.expression.expression.type === 'condition') {
+          expect(result.ast.expression.expression.key.value).toBe('status');
+          expect(result.ast.expression.expression.value.value).toBe('active');
+        }
+      }
+    });
+
+    test('should parse NOT with quoted string', () => {
+      const result = parser.parse('NOT name: "John Doe"');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('not');
+
+      if (result.ast?.expression.type === 'not') {
+        expect(result.ast.expression.expression.type).toBe('condition');
+        if (result.ast.expression.expression.type === 'condition') {
+          expect(result.ast.expression.expression.value.value).toBe('John Doe');
+        }
+      }
+    });
+
+    test('should parse NOT with grouped expression', () => {
+      const result = parser.parse('NOT (status: active AND role: admin)');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('not');
+
+      if (result.ast?.expression.type === 'not') {
+        expect(result.ast.expression.expression.type).toBe('group');
+        if (result.ast.expression.expression.type === 'group') {
+          expect(result.ast.expression.expression.expression.type).toBe('boolean');
+        }
+      }
+    });
+
+    test('should handle NOT with highest precedence', () => {
+      const result = parser.parse('status: pending OR NOT role: admin');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('boolean');
+
+      if (result.ast?.expression.type === 'boolean') {
+        expect(result.ast.expression.operator.value).toBe('OR');
+        expect(result.ast.expression.left.type).toBe('condition');
+        expect(result.ast.expression.right.type).toBe('not');
+
+        if (result.ast.expression.right.type === 'not') {
+          expect(result.ast.expression.right.expression.type).toBe('condition');
+        }
+      }
+    });
+
+    test('should parse NOT with AND expression', () => {
+      const result = parser.parse('NOT status: active AND role: admin');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('boolean');
+
+      if (result.ast?.expression.type === 'boolean') {
+        expect(result.ast.expression.operator.value).toBe('AND');
+        expect(result.ast.expression.left.type).toBe('not');
+        expect(result.ast.expression.right.type).toBe('condition');
+
+        if (result.ast.expression.left.type === 'not') {
+          expect(result.ast.expression.left.expression.type).toBe('condition');
+        }
+      }
+    });
+
+    test('should parse multiple NOT expressions', () => {
+      const result = parser.parse('NOT status: active AND NOT role: admin');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('boolean');
+
+      if (result.ast?.expression.type === 'boolean') {
+        expect(result.ast.expression.operator.value).toBe('AND');
+        expect(result.ast.expression.left.type).toBe('not');
+        expect(result.ast.expression.right.type).toBe('not');
+      }
+    });
+
+    test('should handle case insensitive NOT', () => {
+      const result = parser.parse('not status: active');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('not');
+    });
+
+    test('should error on NOT without expression', () => {
+      const result = parser.parse('NOT');
+
+      expect(result.success).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      if (result.errors.length > 0) {
+        expect(result.errors[0]!.message).toContain("Expected expression after 'NOT'");
+      }
+    });
+
+    test('should error on NOT followed by operator', () => {
+      const result = parser.parse('NOT AND status: active');
+
+      expect(result.success).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    test('should parse complex expression with NOT', () => {
+      const result = parser.parse('(status: active OR status: pending) AND NOT role: admin');
+
+      expect(result.success).toBe(true);
+      expect(result.ast?.expression.type).toBe('boolean');
+
+      if (result.ast?.expression.type === 'boolean') {
+        expect(result.ast.expression.operator.value).toBe('AND');
+        expect(result.ast.expression.left.type).toBe('group');
+        expect(result.ast.expression.right.type).toBe('not');
+      }
     });
   });
 
@@ -511,7 +640,7 @@ describe('Advanced Parser Tests', () => {
       // Generate a large but reasonable expression
       const conditions = Array.from({ length: 50 }, (_, i) => `field${i}: value${i}`);
       const input = conditions.join(' AND ');
-      
+
       const result = parser.parse(input);
 
       expect(result.success).toBe(true);
@@ -523,7 +652,7 @@ describe('Advanced Parser Tests', () => {
       for (let i = 0; i < 10; i++) {
         input = `(${input} AND field${i}: value${i})`;
       }
-      
+
       const result = parser.parse(input);
 
       expect(result.success).toBe(true);

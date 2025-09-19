@@ -1,6 +1,7 @@
 export const BooleanOperators = {
   AND: 'AND',
   OR: 'OR',
+  NOT: 'NOT',
 } as const;
 
 type TypeofBooleanOperator = typeof BooleanOperators;
