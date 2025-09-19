@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.0.9
+
+### Patch Changes
+
+- Update the documentation to let users know about the new NOT.
+
 ## 1.0.8
 
 ### Patch Changes
