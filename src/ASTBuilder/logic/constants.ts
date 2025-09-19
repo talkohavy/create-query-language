@@ -6,6 +6,7 @@ export const AstTypes = {
   Condition: 'condition',
   Group: 'group',
   Boolean: 'boolean',
+  Not: 'not',
   Query: 'query',
 } as const;
 

@@ -27,7 +27,9 @@ export class QueryParser implements IQueryParser {
       this.tokenStream = new TokenStream(tokens);
 
       // Skip leading whitespace
-      this.tokenStream.countAndSkipWhitespaces({ expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis] });
+      this.tokenStream.countAndSkipWhitespaces({
+        expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
+      });
 
       // Check for empty input
       if (this.tokenStream.isAtEnd()) {
@@ -107,7 +109,9 @@ export class QueryParser implements IQueryParser {
     while (this.matchLogicalOperatorOR()) {
       const operatorToken = this.tokenStream.consume()!;
 
-      this.tokenStream.countAndSkipWhitespaces({ expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis] });
+      this.tokenStream.countAndSkipWhitespaces({
+        expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
+      });
 
       const rightAST = this.parseAndExpression();
 
@@ -127,7 +131,7 @@ export class QueryParser implements IQueryParser {
    * Parse AND expressions (higher precedence than OR)
    */
   private parseAndExpression(): Expression | null {
-    let leftAST = this.parsePrimaryExpression();
+    let leftAST = this.parseNotExpression();
 
     if (!leftAST) return null;
 
@@ -141,7 +145,7 @@ export class QueryParser implements IQueryParser {
       const operatorToken = this.tokenStream.consume()!;
 
       const whiteSpacesAfterLogicalOperatorCount = this.tokenStream.countAndSkipWhitespaces({
-        expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis],
+        expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
       });
 
       // Check if we're at end of input after AND
@@ -158,7 +162,7 @@ export class QueryParser implements IQueryParser {
         return leftAST;
       }
 
-      const rightAST = this.parsePrimaryExpression();
+      const rightAST = this.parseNotExpression();
 
       if (!rightAST) return leftAST;
 
@@ -176,6 +180,50 @@ export class QueryParser implements IQueryParser {
     }
 
     return leftAST;
+  }
+
+  /**
+   * Parse NOT expressions (highest precedence for unary operators)
+   */
+  private parseNotExpression(): Expression | null {
+    this.tokenStream.countAndSkipWhitespaces({
+      expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
+    });
+
+    // Check if current token is NOT
+    if (this.matchLogicalOperatorNOT()) {
+      const notToken = this.tokenStream.consume()!;
+
+      const whiteSpacesAfterNotCount = this.tokenStream.countAndSkipWhitespaces({
+        expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis],
+      });
+
+      // Check if we're at end of input after NOT
+      if (this.tokenStream.isAtEnd()) {
+        const errorPosition = this.getPositionAfterToken(notToken);
+        errorPosition.end += whiteSpacesAfterNotCount;
+
+        this.addError({
+          message: ERROR_MESSAGES.EXPECTED_EXPRESSION_AFTER_NOT,
+          position: errorPosition,
+          code: ERROR_CODES.MISSING_TOKEN,
+        });
+
+        return null;
+      }
+
+      const expression = this.parsePrimaryExpression();
+
+      if (!expression) return null;
+
+      const notPosition = ASTBuilder.mergePositions(notToken.position, expression.position);
+      const notAST = ASTBuilder.createNotExpression(expression, notPosition);
+
+      return notAST;
+    }
+
+    // If not a NOT expression, parse as primary expression
+    return this.parsePrimaryExpression();
   }
 
   /**
@@ -385,6 +433,19 @@ export class QueryParser implements IQueryParser {
     return isOrOperator;
   }
 
+  /**
+   * Check if current token matches NOT operator
+   */
+  private matchLogicalOperatorNOT(): boolean {
+    const token = this.tokenStream.current();
+
+    if (!token) return false;
+
+    const isNotOperator = token.type === TokenTypes.NOT;
+
+    return isNotOperator;
+  }
+
   private addError(props: AddErrorProps): void {
     const { code, message, position } = props;
 
@@ -420,7 +481,9 @@ export class QueryParser implements IQueryParser {
 
   private isPartialLogicalOperator(value: string): boolean {
     const lowercasedIncompleteValue = value.toLowerCase();
-    return [TokenTypes.AND, TokenTypes.OR].some((op) => op.toLowerCase().startsWith(lowercasedIncompleteValue));
+    return [TokenTypes.AND, TokenTypes.OR, TokenTypes.NOT].some((op) =>
+      op.toLowerCase().startsWith(lowercasedIncompleteValue),
+    );
   }
 
   private isPartialComparator(value: string): boolean {
