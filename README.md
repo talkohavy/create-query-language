@@ -14,7 +14,7 @@ A flexible TypeScript library for parsing and building query languages with supp
 ## ✨ Features
 
 - 🚀 **Fast and Lightweight** - Built with performance in mind using TypeScript
-- 🔍 **Flexible Query Syntax** - Support for boolean logic, comparisons, and grouping
+- 🔍 **Flexible Query Syntax** - Support for boolean logic (AND, OR, NOT), comparisons, and grouping
 - 🎯 **Type Safe** - Full TypeScript support with comprehensive type definitions
 - 🌳 **AST Generation** - Generate Abstract Syntax Trees for complex query processing
 - 🔧 **Extensible** - Modular architecture allows for easy customization
@@ -42,7 +42,7 @@ import { QueryParser, QueryLexer, ASTBuilder } from 'create-query-language';
 
 // Basic parsing
 const parser = new QueryParser();
-const result = parser.parse('status: active AND role: admin');
+const result = parser.parse('status: active AND NOT role: guest');
 
 if (result.success) {
   console.log('Query parsed successfully!');
@@ -68,11 +68,16 @@ const result1 = parser.parse('status: active');
 const result2 = parser.parse('status: active AND role: admin');
 const result3 = parser.parse('type: user OR type: admin');
 
+// NOT expressions
+const result4 = parser.parse('NOT status: inactive');
+const result5 = parser.parse('status: active AND NOT role: guest');
+
 // Grouped expressions
-const result4 = parser.parse('(status: active OR status: pending) AND role: admin');
+const result6 = parser.parse('(status: active OR status: pending) AND role: admin');
+const result7 = parser.parse('NOT (status: inactive OR role: guest)');
 
 // Different comparators
-const result5 = parser.parse('age >= 18 AND score > 85');
+const result8 = parser.parse('age >= 18 AND score > 85');
 ```
 
 ## 🎯 Supported Query Syntax
@@ -102,7 +107,10 @@ field: value       # Colon (default)
 ```
 status: active AND role: admin           # AND operation
 type: user OR type: admin               # OR operation
-status: active AND (role: admin OR role: manager)  # Grouped expressions
+NOT status: inactive                    # NOT operation (negation)
+status: active AND NOT role: guest      # Combined with other operators
+NOT (status: inactive OR role: guest)   # NOT with grouped expressions
+status: active AND (role: admin OR role: manager)  # Complex grouping
 ```
 
 ### Quoted Strings
@@ -119,6 +127,24 @@ message: "He said \"Hello\""            # Escaped quotes
 (status: active)                        # Simple group
 (status: active OR status: pending) AND role: admin  # Complex grouping
 ((field: value))                        # Nested groups
+NOT (status: inactive OR role: guest)   # NOT with groups
+```
+
+### Operator Precedence
+
+The query language follows standard operator precedence rules (from highest to lowest):
+
+1. **Parentheses** `()` - Highest precedence, overrides all other operators
+2. **NOT** - Unary negation operator
+3. **AND** - Logical AND operation
+4. **OR** - Logical OR operation (lowest precedence)
+
+Examples of precedence in action:
+
+```
+NOT status: active AND role: admin      # Equivalent to: (NOT status: active) AND role: admin
+status: a OR status: b AND role: c      # Equivalent to: status: a OR (status: b AND role: c)
+NOT (status: a OR status: b)            # NOT applies to the entire grouped expression
 ```
 
 ## 🔧 API Reference
