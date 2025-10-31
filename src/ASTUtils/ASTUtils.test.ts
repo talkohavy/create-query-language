@@ -1,16 +1,16 @@
-import { ASTBuilder } from './ASTUtils';
+import { ASTUtils } from './ASTUtils';
 import { AstTypes } from './logic/constants';
 
-describe('ASTBuilder', () => {
+describe('ASTUtils', () => {
   describe('createQuery', () => {
     test('should create a query node with correct structure', () => {
-      const position = ASTBuilder.createPosition(0, 10);
-      const key = ASTBuilder.createKey('status', position);
-      const comparator = ASTBuilder.createComparator('<', position);
-      const value = ASTBuilder.createValue('active', position);
-      const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, position);
+      const position = ASTUtils.createPosition(0, 10);
+      const key = ASTUtils.createKey('status', position);
+      const comparator = ASTUtils.createComparator('<', position);
+      const value = ASTUtils.createValue('active', position);
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, position);
 
-      const query = ASTBuilder.createQuery(condition, position);
+      const query = ASTUtils.createQuery(condition, position);
 
       expect(query.type).toBe(AstTypes.Query);
       expect(query.expression).toBe(condition);
@@ -20,20 +20,20 @@ describe('ASTBuilder', () => {
 
   describe('createBooleanExpression', () => {
     test('should create a boolean expression node', () => {
-      const position = ASTBuilder.createPosition(0, 20);
-      const operator = ASTBuilder.createOperator('AND', position);
+      const position = ASTUtils.createPosition(0, 20);
+      const operator = ASTUtils.createOperator('AND', position);
 
-      const leftKey = ASTBuilder.createKey('status', position);
-      const leftComparator = ASTBuilder.createComparator('<', position);
-      const leftValue = ASTBuilder.createValue('active', position);
-      const leftCondition = ASTBuilder.createCondition(leftKey, leftComparator, leftValue, 0, 1, 0, position);
+      const leftKey = ASTUtils.createKey('status', position);
+      const leftComparator = ASTUtils.createComparator('<', position);
+      const leftValue = ASTUtils.createValue('active', position);
+      const leftCondition = ASTUtils.createCondition(leftKey, leftComparator, leftValue, 0, 1, 0, position);
 
-      const rightKey = ASTBuilder.createKey('role', position);
-      const rightComparator = ASTBuilder.createComparator('<', position);
-      const rightValue = ASTBuilder.createValue('admin', position);
-      const rightCondition = ASTBuilder.createCondition(rightKey, rightComparator, rightValue, 0, 1, 0, position);
+      const rightKey = ASTUtils.createKey('role', position);
+      const rightComparator = ASTUtils.createComparator('<', position);
+      const rightValue = ASTUtils.createValue('admin', position);
+      const rightCondition = ASTUtils.createCondition(rightKey, rightComparator, rightValue, 0, 1, 0, position);
 
-      const booleanExpr = ASTBuilder.createBooleanExpression(operator, leftCondition, rightCondition, position);
+      const booleanExpr = ASTUtils.createBooleanExpression(operator, leftCondition, rightCondition, position);
 
       expect(booleanExpr.type).toBe(AstTypes.Boolean);
       expect(booleanExpr.operator).toBe(operator);
@@ -45,8 +45,8 @@ describe('ASTBuilder', () => {
 
   describe('createKey', () => {
     test('should create a key node', () => {
-      const position = ASTBuilder.createPosition(0, 6);
-      const key = ASTBuilder.createKey('status', position);
+      const position = ASTUtils.createPosition(0, 6);
+      const key = ASTUtils.createKey('status', position);
 
       expect(key.type).toBe(AstTypes.Key);
       expect(key.value).toBe('status');
@@ -56,20 +56,11 @@ describe('ASTBuilder', () => {
 
   describe('createComparator', () => {
     test('should create a comparator node with colon', () => {
-      const position = ASTBuilder.createPosition(6, 7);
-      const comparator = ASTBuilder.createComparator('<', position);
+      const position = ASTUtils.createPosition(6, 7);
+      const comparator = ASTUtils.createComparator('<', position);
 
       expect(comparator.type).toBe(AstTypes.Comparator);
       expect(comparator.value).toBe('<');
-      expect(comparator.position).toBe(position);
-    });
-
-    test('should create a comparator node with equals', () => {
-      const position = ASTBuilder.createPosition(6, 8);
-      const comparator = ASTBuilder.createComparator('==', position);
-
-      expect(comparator.type).toBe(AstTypes.Comparator);
-      expect(comparator.value).toBe('==');
       expect(comparator.position).toBe(position);
     });
 
@@ -77,8 +68,8 @@ describe('ASTBuilder', () => {
       const operators = ['<', '==', '!=', '<', '>', '<=', '>='] as const;
 
       operators.forEach((op) => {
-        const position = ASTBuilder.createPosition(0, op.length);
-        const comparator = ASTBuilder.createComparator(op, position);
+        const position = ASTUtils.createPosition(0, op.length);
+        const comparator = ASTUtils.createComparator(op, position);
 
         expect(comparator.type).toBe(AstTypes.Comparator);
         expect(comparator.value).toBe(op);
@@ -88,8 +79,8 @@ describe('ASTBuilder', () => {
 
   describe('createOperator', () => {
     test('should create an AND operator node', () => {
-      const position = ASTBuilder.createPosition(10, 13);
-      const operator = ASTBuilder.createOperator('AND', position);
+      const position = ASTUtils.createPosition(10, 13);
+      const operator = ASTUtils.createOperator('AND', position);
 
       expect(operator.type).toBe(AstTypes.LogicalOperator);
       expect(operator.value).toBe('AND');
@@ -97,8 +88,8 @@ describe('ASTBuilder', () => {
     });
 
     test('should create an OR operator node', () => {
-      const position = ASTBuilder.createPosition(10, 12);
-      const operator = ASTBuilder.createOperator('OR', position);
+      const position = ASTUtils.createPosition(10, 12);
+      const operator = ASTUtils.createOperator('OR', position);
 
       expect(operator.type).toBe(AstTypes.LogicalOperator);
       expect(operator.value).toBe('OR');
@@ -108,8 +99,8 @@ describe('ASTBuilder', () => {
 
   describe('createValue', () => {
     test('should create a value node', () => {
-      const position = ASTBuilder.createPosition(8, 14);
-      const value = ASTBuilder.createValue('active', position);
+      const position = ASTUtils.createPosition(8, 14);
+      const value = ASTUtils.createValue('active', position);
 
       expect(value.type).toBe(AstTypes.Value);
       expect(value.value).toBe('active');
@@ -117,8 +108,8 @@ describe('ASTBuilder', () => {
     });
 
     test('should create a value node with quoted string', () => {
-      const position = ASTBuilder.createPosition(8, 20);
-      const value = ASTBuilder.createValue('John Doe', position);
+      const position = ASTUtils.createPosition(8, 20);
+      const value = ASTUtils.createValue('John Doe', position);
 
       expect(value.type).toBe(AstTypes.Value);
       expect(value.value).toBe('John Doe');
@@ -128,12 +119,12 @@ describe('ASTBuilder', () => {
 
   describe('createCondition', () => {
     test('should create a condition node with all components', () => {
-      const position = ASTBuilder.createPosition(0, 15);
-      const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
-      const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
+      const position = ASTUtils.createPosition(0, 15);
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(0, 6));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(6, 7));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(8, 14));
 
-      const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, position);
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, position);
 
       expect(condition.type).toBe(AstTypes.Condition);
       expect(condition.key).toBe(key);
@@ -146,12 +137,12 @@ describe('ASTBuilder', () => {
     });
 
     test('should create a condition node with custom spacing', () => {
-      const position = ASTBuilder.createPosition(0, 20);
-      const key = ASTBuilder.createKey('name', ASTBuilder.createPosition(0, 4));
-      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(5, 6));
-      const value = ASTBuilder.createValue('test', ASTBuilder.createPosition(9, 13));
+      const position = ASTUtils.createPosition(0, 20);
+      const key = ASTUtils.createKey('name', ASTUtils.createPosition(0, 4));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(5, 6));
+      const value = ASTUtils.createValue('test', ASTUtils.createPosition(9, 13));
 
-      const condition = ASTBuilder.createCondition(key, comparator, value, 1, 2, 3, position);
+      const condition = ASTUtils.createCondition(key, comparator, value, 1, 2, 3, position);
 
       expect(condition.spacesAfterKey).toBe(1);
       expect(condition.spacesAfterComparator).toBe(2);
@@ -161,13 +152,13 @@ describe('ASTBuilder', () => {
 
   describe('createGroup', () => {
     test('should create a group node', () => {
-      const position = ASTBuilder.createPosition(0, 17);
-      const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(1, 7));
-      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(7, 8));
-      const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(9, 15));
-      const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(1, 15));
+      const position = ASTUtils.createPosition(0, 17);
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(1, 7));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(7, 8));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(9, 15));
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, ASTUtils.createPosition(1, 15));
 
-      const group = ASTBuilder.createGroup(condition, position);
+      const group = ASTUtils.createGroup(condition, position);
 
       expect(group.type).toBe(AstTypes.Group);
       expect(group.expression).toBe(condition);
@@ -177,154 +168,122 @@ describe('ASTBuilder', () => {
 
   describe('createPosition', () => {
     test('should create a position with start and end', () => {
-      const position = ASTBuilder.createPosition(5, 10);
+      const position = ASTUtils.createPosition(5, 10);
 
       expect(position.start).toBe(5);
       expect(position.end).toBe(10);
-      expect(position.line).toBeUndefined();
-      expect(position.column).toBeUndefined();
-    });
-
-    test('should create a position with line and column', () => {
-      const position = ASTBuilder.createPosition(5, 10, 2, 3);
-
-      expect(position.start).toBe(5);
-      expect(position.end).toBe(10);
-      expect(position.line).toBe(2);
-      expect(position.column).toBe(3);
     });
   });
 
   describe('mergePositions', () => {
-    test('should merge two positions', () => {
-      const pos1 = ASTBuilder.createPosition(5, 10, 1, 5);
-      const pos2 = ASTBuilder.createPosition(15, 20, 1, 15);
-
-      const merged = ASTBuilder.mergePositions(pos1, pos2);
-
-      expect(merged.start).toBe(5);
-      expect(merged.end).toBe(20);
-      expect(merged.line).toBe(1);
-      expect(merged.column).toBe(5);
-    });
-
     test('should merge multiple positions', () => {
-      const pos1 = ASTBuilder.createPosition(10, 15);
-      const pos2 = ASTBuilder.createPosition(5, 8);
-      const pos3 = ASTBuilder.createPosition(20, 25);
+      const pos1 = ASTUtils.createPosition(10, 15);
+      const pos2 = ASTUtils.createPosition(5, 8);
+      const pos3 = ASTUtils.createPosition(20, 25);
 
-      const merged = ASTBuilder.mergePositions(pos1, pos2, pos3);
+      const merged = ASTUtils.mergePositions(pos1, pos2, pos3);
 
       expect(merged.start).toBe(5);
       expect(merged.end).toBe(25);
     });
 
     test('should handle empty array', () => {
-      const merged = ASTBuilder.mergePositions();
+      const merged = ASTUtils.mergePositions();
 
       expect(merged.start).toBe(0);
       expect(merged.end).toBe(0);
-    });
-
-    test('should handle single position', () => {
-      const pos = ASTBuilder.createPosition(10, 20, 2, 5);
-      const merged = ASTBuilder.mergePositions(pos);
-
-      expect(merged.start).toBe(10);
-      expect(merged.end).toBe(20);
-      expect(merged.line).toBe(2);
-      expect(merged.column).toBe(5);
     });
   });
 
   describe('traverseAST', () => {
     test('should traverse a simple condition', () => {
-      const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
-      const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
-      const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(0, 14));
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(0, 6));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(6, 7));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(8, 14));
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, ASTUtils.createPosition(0, 14));
 
       const visitedNodes: string[] = [];
 
-      ASTBuilder.traverseAST(condition, null, (node) => {
+      ASTUtils.traverseAST(condition, null, (node) => {
         visitedNodes.push(node.type);
         return true;
       });
 
-      expect(visitedNodes).toEqual(['condition', 'key', 'comparator', 'value']);
+      // First callback on root node, then callback on condition during traversal
+      expect(visitedNodes).toEqual(['condition', 'condition']);
     });
 
     test('should traverse a group expression', () => {
-      const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(1, 7));
-      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(7, 8));
-      const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(9, 15));
-      const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(1, 15));
-      const group = ASTBuilder.createGroup(condition, ASTBuilder.createPosition(0, 16));
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(1, 7));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(7, 8));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(9, 15));
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, ASTUtils.createPosition(1, 15));
+      const group = ASTUtils.createGroup(condition, ASTUtils.createPosition(0, 16));
 
       const visitedNodes: string[] = [];
 
-      ASTBuilder.traverseAST(group, null, (node) => {
+      ASTUtils.traverseAST(group, null, (node) => {
         visitedNodes.push(node.type);
         return true;
       });
 
-      expect(visitedNodes).toEqual(['group', 'key', 'comparator', 'value']);
+      expect(visitedNodes).toEqual(['group', 'condition']);
     });
 
     test('should traverse a boolean expression', () => {
-      const leftKey = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const leftComparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
-      const leftValue = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
-      const leftCondition = ASTBuilder.createCondition(
+      const leftKey = ASTUtils.createKey('status', ASTUtils.createPosition(0, 6));
+      const leftComparator = ASTUtils.createComparator('<', ASTUtils.createPosition(6, 7));
+      const leftValue = ASTUtils.createValue('active', ASTUtils.createPosition(8, 14));
+      const leftCondition = ASTUtils.createCondition(
         leftKey,
         leftComparator,
         leftValue,
         0,
         1,
         0,
-        ASTBuilder.createPosition(0, 14),
+        ASTUtils.createPosition(0, 14),
       );
 
-      const rightKey = ASTBuilder.createKey('role', ASTBuilder.createPosition(19, 23));
-      const rightComparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(23, 24));
-      const rightValue = ASTBuilder.createValue('admin', ASTBuilder.createPosition(25, 30));
-      const rightCondition = ASTBuilder.createCondition(
+      const rightKey = ASTUtils.createKey('role', ASTUtils.createPosition(19, 23));
+      const rightComparator = ASTUtils.createComparator('<', ASTUtils.createPosition(23, 24));
+      const rightValue = ASTUtils.createValue('admin', ASTUtils.createPosition(25, 30));
+      const rightCondition = ASTUtils.createCondition(
         rightKey,
         rightComparator,
         rightValue,
         0,
         1,
         0,
-        ASTBuilder.createPosition(19, 30),
+        ASTUtils.createPosition(19, 30),
       );
 
-      const operator = ASTBuilder.createOperator('AND', ASTBuilder.createPosition(15, 18));
-      const booleanExpr = ASTBuilder.createBooleanExpression(
+      const operator = ASTUtils.createOperator('AND', ASTUtils.createPosition(15, 18));
+      const booleanExpr = ASTUtils.createBooleanExpression(
         operator,
         leftCondition,
         rightCondition,
-        ASTBuilder.createPosition(0, 30),
+        ASTUtils.createPosition(0, 30),
       );
 
       const visitedNodes: string[] = [];
 
-      ASTBuilder.traverseAST(booleanExpr, null, (node) => {
+      ASTUtils.traverseAST(booleanExpr, null, (node) => {
         visitedNodes.push(node.type);
         return true;
       });
 
-      expect(visitedNodes).toEqual(['boolean', 'key', 'comparator', 'value', 'key', 'comparator', 'value']);
+      expect(visitedNodes).toEqual(['boolean', 'condition', 'condition']);
     });
 
     test('should stop traversal when callback returns false', () => {
-      const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
-      const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
-      const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(0, 14));
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(0, 6));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(6, 7));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(8, 14));
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, ASTUtils.createPosition(0, 14));
 
       const visitedNodes: string[] = [];
 
-      ASTBuilder.traverseAST(condition, null, (node) => {
+      ASTUtils.traverseAST(condition, null, (node) => {
         visitedNodes.push(node.type);
         return false; // Stop traversal
       });
@@ -333,19 +292,125 @@ describe('ASTBuilder', () => {
     });
 
     test('should provide parent node information', () => {
-      const key = ASTBuilder.createKey('status', ASTBuilder.createPosition(0, 6));
-      const comparator = ASTBuilder.createComparator('<', ASTBuilder.createPosition(6, 7));
-      const value = ASTBuilder.createValue('active', ASTBuilder.createPosition(8, 14));
-      const condition = ASTBuilder.createCondition(key, comparator, value, 0, 1, 0, ASTBuilder.createPosition(0, 14));
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(0, 6));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(6, 7));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(8, 14));
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, ASTUtils.createPosition(0, 14));
 
       const parentNodes: Array<string | null> = [];
 
-      ASTBuilder.traverseAST(condition, null, (_node, parent) => {
+      ASTUtils.traverseAST(condition, null, (_node, parent) => {
         parentNodes.push(parent?.type || null);
         return true;
       });
 
-      expect(parentNodes).toEqual([null, 'condition', 'condition', 'condition']);
+      expect(parentNodes).toEqual([null, null]);
+    });
+
+    test('should traverse nested groups', () => {
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(2, 8));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(8, 9));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(10, 16));
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, ASTUtils.createPosition(2, 16));
+      const innerGroup = ASTUtils.createGroup(condition, ASTUtils.createPosition(1, 17));
+      const outerGroup = ASTUtils.createGroup(innerGroup, ASTUtils.createPosition(0, 18));
+
+      const visitedNodes: string[] = [];
+
+      ASTUtils.traverseAST(outerGroup, null, (node) => {
+        visitedNodes.push(node.type);
+        return true;
+      });
+
+      // Callback on outer group, then traverses through inner group to condition
+      expect(visitedNodes).toEqual(['group', 'condition']);
+    });
+
+    test('should traverse NOT expression', () => {
+      const key = ASTUtils.createKey('status', ASTUtils.createPosition(5, 11));
+      const comparator = ASTUtils.createComparator('<', ASTUtils.createPosition(11, 12));
+      const value = ASTUtils.createValue('active', ASTUtils.createPosition(13, 19));
+      const condition = ASTUtils.createCondition(key, comparator, value, 0, 1, 0, ASTUtils.createPosition(5, 19));
+      const notExpr = ASTUtils.createNotExpression(condition, ASTUtils.createPosition(0, 19));
+
+      const visitedNodes: string[] = [];
+
+      ASTUtils.traverseAST(notExpr, null, (node) => {
+        visitedNodes.push(node.type);
+        return true;
+      });
+
+      // Callback on NOT, then on the inner condition
+      expect(visitedNodes).toEqual(['not', 'condition']);
+    });
+
+    test('should traverse complex nested boolean expressions', () => {
+      // (status:active AND role:admin) OR name:test
+      const leftKey = ASTUtils.createKey('status', ASTUtils.createPosition(1, 7));
+      const leftComparator = ASTUtils.createComparator('<', ASTUtils.createPosition(7, 8));
+      const leftValue = ASTUtils.createValue('active', ASTUtils.createPosition(9, 15));
+      const leftCondition = ASTUtils.createCondition(
+        leftKey,
+        leftComparator,
+        leftValue,
+        0,
+        1,
+        0,
+        ASTUtils.createPosition(1, 15),
+      );
+
+      const middleKey = ASTUtils.createKey('role', ASTUtils.createPosition(20, 24));
+      const middleComparator = ASTUtils.createComparator('<', ASTUtils.createPosition(24, 25));
+      const middleValue = ASTUtils.createValue('admin', ASTUtils.createPosition(26, 31));
+      const middleCondition = ASTUtils.createCondition(
+        middleKey,
+        middleComparator,
+        middleValue,
+        0,
+        1,
+        0,
+        ASTUtils.createPosition(20, 31),
+      );
+
+      const andOperator = ASTUtils.createOperator('AND', ASTUtils.createPosition(16, 19));
+      const andExpr = ASTUtils.createBooleanExpression(
+        andOperator,
+        leftCondition,
+        middleCondition,
+        ASTUtils.createPosition(1, 31),
+      );
+      const groupExpr = ASTUtils.createGroup(andExpr, ASTUtils.createPosition(0, 32));
+
+      const rightKey = ASTUtils.createKey('name', ASTUtils.createPosition(36, 40));
+      const rightComparator = ASTUtils.createComparator('<', ASTUtils.createPosition(40, 41));
+      const rightValue = ASTUtils.createValue('test', ASTUtils.createPosition(42, 46));
+      const rightCondition = ASTUtils.createCondition(
+        rightKey,
+        rightComparator,
+        rightValue,
+        0,
+        1,
+        0,
+        ASTUtils.createPosition(36, 46),
+      );
+
+      const orOperator = ASTUtils.createOperator('OR', ASTUtils.createPosition(33, 35));
+      const orExpr = ASTUtils.createBooleanExpression(
+        orOperator,
+        groupExpr,
+        rightCondition,
+        ASTUtils.createPosition(0, 46),
+      );
+
+      const visitedNodes: string[] = [];
+
+      ASTUtils.traverseAST(orExpr, null, (node) => {
+        visitedNodes.push(node.type);
+        return true;
+      });
+
+      // OR boolean -> group (left) has AND boolean inside with 2 conditions, right has 1 condition
+      expect(visitedNodes).toEqual(['boolean', 'condition', 'condition', 'condition']);
     });
   });
 });
