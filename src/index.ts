@@ -8,6 +8,9 @@ export type * from './QueryParser';
 export type * from './QueryLexer';
 export type * from './TokenStream';
 
-// common
+// constants
 export * from './logic/constants';
+
+// types
 export type * from './logic/constants';
+export type * from './logic/types';

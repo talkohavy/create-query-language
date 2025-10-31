@@ -1,5 +1,11 @@
 # create-query-language
 
+## 1.1.1
+
+### Patch Changes
+
+- Export Position type.
+
 ## 1.1.0
 
 ### Minor Changes
