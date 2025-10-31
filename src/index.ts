@@ -9,5 +9,5 @@ export type * from './QueryLexer';
 export type * from './TokenStream';
 
 // common
-export * from './common/constants';
-export type * from './common/constants';
+export * from './logic/constants';
+export type * from './logic/constants';

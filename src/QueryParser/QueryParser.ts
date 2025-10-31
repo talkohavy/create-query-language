@@ -1,7 +1,7 @@
 import type { AddErrorProps, IQueryParser } from './QueryParser.interface';
 import type { ParseError, ParseResult, QueryParserOptions, TokenContext } from './types';
-import { ASTBuilder, type Expression } from '../ASTUtils';
-import { BooleanOperators, Comparators, type ComparatorValues } from '../common/constants';
+import { ASTUtils, type Expression } from '../ASTUtils';
+import { LogicalOperators, Comparators, type ComparatorValues } from '../logic/constants';
 import { QueryLexer, TokenTypes } from '../QueryLexer';
 import { TokenStream } from '../TokenStream';
 import { ContextTypes, ERROR_CODES, ERROR_MESSAGES, type ContextTypeValues } from './logic/constants';
@@ -33,7 +33,7 @@ export class QueryParser implements IQueryParser {
 
       // Check for empty input
       if (this.tokenStream.isAtEnd()) {
-        const errorEmptyInputPosition = ASTBuilder.createPosition(0, 0);
+        const errorEmptyInputPosition = ASTUtils.createPosition(0, 0);
         this.addError({
           message: ERROR_MESSAGES.EMPTY_QUERY,
           position: errorEmptyInputPosition,
@@ -55,25 +55,28 @@ export class QueryParser implements IQueryParser {
         const token = this.tokenStream.current()!;
 
         const expectedTokens: ContextTypeValues[] = [];
-        const spacesAfterValue = 'spacesAfterValue' in expression ? expression.spacesAfterValue : 0;
 
-        if (
-          token.position.start === expression.position.end + spacesAfterValue &&
-          this.isPartialLogicalOperator(token.value)
-        ) {
+        if (this.isPartialLogicalOperator(token.value)) {
           expectedTokens.push(ContextTypes.LogicalOperator);
         }
-        token.context = { expectedTokens };
 
-        this.addError({
-          message: ERROR_MESSAGES.EXPECTED_OPERATOR,
-          position: token.position,
-          code: ERROR_CODES.UNEXPECTED_TOKEN,
-        });
+        /**
+         * When no other errors, it means that the query up to this point is valid,
+         * so we add an error to suggest a logical operator.
+         */
+        if (this.errors.length === 0) {
+          this.addError({
+            message: ERROR_MESSAGES.EXPECTED_OPERATOR,
+            position: token.position,
+            code: ERROR_CODES.UNEXPECTED_TOKEN,
+          });
+        }
+
+        token.context = { expectedTokens };
       }
 
-      const queryPosition = ASTBuilder.createPosition(0, input.length);
-      const queryAST = ASTBuilder.createQuery(expression, queryPosition);
+      const queryPosition = ASTUtils.createPosition(0, input.length);
+      const queryAST = ASTUtils.createQuery(expression, queryPosition);
 
       return {
         success: this.errors.length === 0,
@@ -82,7 +85,7 @@ export class QueryParser implements IQueryParser {
         tokens,
       };
     } catch (error) {
-      const errorPosition = ASTBuilder.createPosition(0, input.length);
+      const errorPosition = ASTUtils.createPosition(0, input.length);
       this.addError({
         message: error instanceof Error ? error.message : 'Unknown parsing error',
         position: errorPosition,
@@ -109,6 +112,8 @@ export class QueryParser implements IQueryParser {
     while (this.matchLogicalOperatorOR()) {
       const operatorToken = this.tokenStream.consume()!;
 
+      operatorToken.context = { expectedTokens: [ContextTypes.LogicalOperator] };
+
       this.tokenStream.countAndSkipWhitespaces({
         expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
       });
@@ -118,10 +123,10 @@ export class QueryParser implements IQueryParser {
       if (!rightAST) return leftAST;
 
       // Create operator node with position information
-      const logicalOperatorNode = ASTBuilder.createOperator(BooleanOperators.OR, operatorToken.position);
+      const logicalOperatorNode = ASTUtils.createOperator(LogicalOperators.OR, operatorToken.position);
 
-      const leftPosition = ASTBuilder.mergePositions(leftAST.position, rightAST.position);
-      leftAST = ASTBuilder.createBooleanExpression(logicalOperatorNode, leftAST, rightAST, leftPosition);
+      const leftPosition = ASTUtils.mergePositions(leftAST.position, rightAST.position);
+      leftAST = ASTUtils.createBooleanExpression(logicalOperatorNode, leftAST, rightAST, leftPosition);
     }
 
     return leftAST;
@@ -143,6 +148,7 @@ export class QueryParser implements IQueryParser {
 
     while (this.matchLogicalOperatorAND()) {
       const operatorToken = this.tokenStream.consume()!;
+      operatorToken.context = { expectedTokens: [ContextTypes.LogicalOperator] };
 
       const whiteSpacesAfterLogicalOperatorCount = this.tokenStream.countAndSkipWhitespaces({
         expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
@@ -167,10 +173,10 @@ export class QueryParser implements IQueryParser {
       if (!rightAST) return leftAST;
 
       // Create operator node with position information
-      const logicalOperatorNode = ASTBuilder.createOperator(BooleanOperators.AND, operatorToken.position);
+      const logicalOperatorNode = ASTUtils.createOperator(LogicalOperators.AND, operatorToken.position);
 
-      const leftPosition = ASTBuilder.mergePositions(leftAST.position, rightAST.position);
-      leftAST = ASTBuilder.createBooleanExpression(logicalOperatorNode, leftAST, rightAST, leftPosition);
+      const leftPosition = ASTUtils.mergePositions(leftAST.position, rightAST.position);
+      leftAST = ASTUtils.createBooleanExpression(logicalOperatorNode, leftAST, rightAST, leftPosition);
 
       const context: TokenContext = { expectedTokens: [ContextTypes.LogicalOperator] };
       if (this.openParenthesisCount > 0) {
@@ -194,6 +200,8 @@ export class QueryParser implements IQueryParser {
     if (this.matchLogicalOperatorNOT()) {
       const notToken = this.tokenStream.consume()!;
 
+      notToken.context = { expectedTokens: [ContextTypes.Not] };
+
       const whiteSpacesAfterNotCount = this.tokenStream.countAndSkipWhitespaces({
         expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis],
       });
@@ -216,8 +224,8 @@ export class QueryParser implements IQueryParser {
 
       if (!expression) return null;
 
-      const notPosition = ASTBuilder.mergePositions(notToken.position, expression.position);
-      const notAST = ASTBuilder.createNotExpression(expression, notPosition);
+      const notPosition = ASTUtils.mergePositions(notToken.position, expression.position);
+      const notAST = ASTUtils.createNotExpression(expression, notPosition);
 
       return notAST;
     }
@@ -230,7 +238,9 @@ export class QueryParser implements IQueryParser {
    * Parse primary expressions (conditions and groups)
    */
   private parsePrimaryExpression(): Expression | null {
-    this.tokenStream.countAndSkipWhitespaces({ expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis] });
+    this.tokenStream.countAndSkipWhitespaces({
+      expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
+    });
 
     // Handle grouped expressions
     if (this.tokenStream.isCurrentAMatchWith(TokenTypes.LeftParenthesis)) {
@@ -249,10 +259,14 @@ export class QueryParser implements IQueryParser {
    * Parse grouped expression (parentheses)
    */
   private parseGroupExpression(): Expression | null {
-    const startToken = this.tokenStream.expect(TokenTypes.LeftParenthesis);
+    const startToken = this.tokenStream.tryGetCurrent(TokenTypes.LeftParenthesis);
+
+    startToken.context = { expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not] };
     this.openParenthesisCount++;
 
-    this.tokenStream.countAndSkipWhitespaces({ expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis] });
+    this.tokenStream.countAndSkipWhitespaces({
+      expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
+    });
 
     // Check for empty parentheses
     if (this.tokenStream.isCurrentAMatchWith(TokenTypes.RightParenthesis)) {
@@ -298,10 +312,13 @@ export class QueryParser implements IQueryParser {
     }
 
     const rightParenthesisToken = this.tokenStream.consume()!;
+
+    rightParenthesisToken.context = { expectedTokens: [ContextTypes.RightParenthesis] };
+
     this.openParenthesisCount--;
 
-    const groupPosition = ASTBuilder.mergePositions(startToken.position, rightParenthesisToken.position);
-    const groupAST = ASTBuilder.createGroup(expression, groupPosition);
+    const groupPosition = ASTUtils.mergePositions(startToken.position, rightParenthesisToken.position);
+    const groupAST = ASTUtils.createGroup(expression, groupPosition);
 
     return groupAST;
   }
@@ -320,7 +337,7 @@ export class QueryParser implements IQueryParser {
     if (!isValidKeyToken) {
       this.addError({
         message: ERROR_MESSAGES.EXPECTED_KEY,
-        position: currentToken?.position || ASTBuilder.createPosition(0, 0),
+        position: currentToken?.position || ASTUtils.createPosition(0, 0),
         code: ERROR_CODES.MISSING_TOKEN,
       });
 
@@ -328,7 +345,12 @@ export class QueryParser implements IQueryParser {
     }
 
     const keyToken = this.tokenStream.consume()!;
-    keyToken.context = { expectedTokens: [ContextTypes.Key, ContextTypes.Colon] };
+    keyToken.context = { expectedTokens: [ContextTypes.Key] };
+
+    // suggest NOT as an alternative to key (e.g., "no" could be either "notification" or "NOT")
+    if (this.isPartialNotOperator(keyToken.value)) {
+      keyToken.context.expectedTokens.push(ContextTypes.Not);
+    }
 
     const spacesAfterKey = this.tokenStream.countAndSkipWhitespaces({
       expectedTokens: [ContextTypes.Comparator, ContextTypes.Colon],
@@ -343,6 +365,7 @@ export class QueryParser implements IQueryParser {
       if (this.isPartialComparator(token.value)) {
         expectedTokens.push(ContextTypes.Comparator);
       }
+
       token.context = { expectedTokens };
 
       this.addError({
@@ -355,7 +378,7 @@ export class QueryParser implements IQueryParser {
     }
 
     const comparatorToken = this.tokenStream.consume()!;
-    comparatorToken.context = { expectedTokens: [ContextTypes.Comparator] };
+    comparatorToken.context = { expectedTokens: [ContextTypes.Comparator, ContextTypes.Colon] };
 
     const spacesAfterComparator = this.tokenStream.countAndSkipWhitespaces({
       expectedTokens: [ContextTypes.Value],
@@ -385,16 +408,16 @@ export class QueryParser implements IQueryParser {
     const spacesAfterValue = this.tokenStream.countAndSkipWhitespaces(context);
 
     // Create child nodes
-    const keyNode = ASTBuilder.createKey(keyToken.value, keyToken.position);
-    const comparatorNode = ASTBuilder.createComparator(
+    const keyNode = ASTUtils.createKey(keyToken.value, keyToken.position);
+    const comparatorNode = ASTUtils.createComparator(
       comparatorToken.value as ComparatorValues,
       comparatorToken.position,
     );
-    const valueNode = ASTBuilder.createValue(valueToken.value, valueToken.position);
+    const valueNode = ASTUtils.createValue(valueToken.value, valueToken.position);
 
-    const conditionPosition = ASTBuilder.mergePositions(keyToken.position, valueToken.position);
+    const conditionPosition = ASTUtils.mergePositions(keyToken.position, valueToken.position);
 
-    const conditionAST = ASTBuilder.createCondition(
+    const conditionAST = ASTUtils.createCondition(
       keyNode,
       comparatorNode,
       valueNode,
@@ -486,8 +509,14 @@ export class QueryParser implements IQueryParser {
     );
   }
 
+  private isPartialNotOperator(value: string): boolean {
+    const lowercasedIncompleteValue = value.toLowerCase();
+
+    return TokenTypes.NOT.toLowerCase().startsWith(lowercasedIncompleteValue);
+  }
+
   private isPartialComparator(value: string): boolean {
-    const comparators = [...Object.values(Comparators), '='];
-    return comparators.some((comp) => comp.startsWith(value));
+    const comparators = Object.values(Comparators);
+    return comparators.some((fullComparator) => fullComparator.startsWith(value));
   }
 }
