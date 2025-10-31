@@ -10,6 +10,8 @@ describe('TokenStream', () => {
       type: TokenTypes[type],
       value,
       position: ASTUtils.createPosition(start, end),
+      next: null,
+      prev: null,
     };
   }
 
@@ -20,7 +22,7 @@ describe('TokenStream', () => {
       createToken('Colon', ':', 7, 8),
       createToken('Whitespace', ' ', 8, 9),
       createToken('Identifier', 'active', 9, 15),
-      createToken('EOF', '', 15, 15),
+      createToken('EndOfLine', '', 15, 15),
     ];
   }
 
@@ -85,7 +87,7 @@ describe('TokenStream', () => {
       const tokens = createTestTokens();
       const tokenStream = new TokenStream(tokens);
 
-      const token = tokenStream.expect('IDENTIFIER');
+      const token = tokenStream.tryGetCurrent('IDENTIFIER');
       expect(token.type).toBe('IDENTIFIER');
       expect(token.value).toBe('status');
 
@@ -98,7 +100,7 @@ describe('TokenStream', () => {
       const tokenStream = new TokenStream(tokens);
 
       expect(() => {
-        tokenStream.expect('COLON');
+        tokenStream.tryGetCurrent('COLON');
       }).toThrow('Expected COLON but got IDENTIFIER at position 0');
     });
 
@@ -106,7 +108,7 @@ describe('TokenStream', () => {
       const tokenStream = new TokenStream([]);
 
       expect(() => {
-        tokenStream.expect('IDENTIFIER');
+        tokenStream.tryGetCurrent('IDENTIFIER');
       }).toThrow('Expected IDENTIFIER but reached end of input');
     });
   });
@@ -213,8 +215,8 @@ describe('TokenStream', () => {
       expect(tokenStream.isAtEnd()).toBe(true);
     });
 
-    test('should return true when current token is EOF', () => {
-      const tokens = [createToken('EOF', '', 0, 0)];
+    test('should return true when current token is END_OF_LINE', () => {
+      const tokens = [createToken('EndOfLine', '', 0, 0)];
       const tokenStream = new TokenStream(tokens);
 
       expect(tokenStream.isAtEnd()).toBe(true);
