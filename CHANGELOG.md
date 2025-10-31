@@ -1,5 +1,26 @@
 # create-query-language
 
+## 1.1.0
+
+### Minor Changes
+
+- - Auto-complete now works on partial operators.
+  - BugFix: Error of ERROR_MESSAGES.EXPECTED_OPERATOR should only be added if there are no other errors.
+- BugFix: NOT is now an auto-complete option after a valid expression.
+- BugFix: key & left-parenthesis & NOT are all valid types after a left-parenthesis.
+- BugFix: a right-parenthesis is a valid type after a right-parenthesis.
+- BugFix: COLON is removed as a valid type when currently typing a key.
+- BugFix: Support NOT as an alternative to key (e.g. "no" could be either "notification" or "NOT").
+- BugFIx: Added COLON as a valid type when on comparator token type.
+- BugFix: Added "!" to isPartialComparator's list.
+- Added LinkedList relation between tokens in the QueryLexer.
+
+### Patch Changes
+
+- Added a help comment on the caseSensitiveOperators prop of the QueryLexer.
+- Renamed BooleanOperators to LogicalOperators
+- Improved logic of ASTUtils.traverseAST(). It now also traverses Query Expressions, and it invoke callback on Condition node, and not 3 times on each of its children (key, comparator and value)
+
 ## 1.0.9
 
 ### Patch Changes

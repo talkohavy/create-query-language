@@ -1,5 +1,5 @@
-import type { BooleanOperatorValues, ComparatorValues } from '../common/constants';
-import type { Position } from '../common/types';
+import type { LogicalOperatorValues, ComparatorValues } from '../logic/constants';
+import type { Position } from '../logic/types';
 import type {
   ASTNode,
   BooleanExpression,
@@ -15,7 +15,7 @@ import type {
 } from './types';
 import { AstTypes } from './logic/constants';
 
-export class ASTBuilder {
+export class ASTUtils {
   static createQuery(expression: Expression, position: Position): QueryExpression {
     return {
       type: AstTypes.Query,
@@ -55,7 +55,7 @@ export class ASTBuilder {
     };
   }
 
-  static createOperator(value: BooleanOperatorValues, position: Position): LogicalOperatorNode {
+  static createOperator(value: LogicalOperatorValues, position: Position): LogicalOperatorNode {
     return {
       type: AstTypes.LogicalOperator,
       value,
@@ -108,13 +108,8 @@ export class ASTBuilder {
     };
   }
 
-  static createPosition(start: number, end: number, line?: number, column?: number): Position {
-    return {
-      start,
-      end,
-      line,
-      column,
-    };
+  static createPosition(start: number, end: number): Position {
+    return { start, end };
   }
 
   /**
@@ -127,10 +122,8 @@ export class ASTBuilder {
 
     const start = Math.min(...positions.map((p) => p.start));
     const end = Math.max(...positions.map((p) => p.end));
-    const line = positions[0]?.line;
-    const column = positions[0]?.column;
 
-    return { start, end, line, column };
+    return { start, end };
   }
 
   /**
@@ -147,16 +140,22 @@ export class ASTBuilder {
 
     function traverse(current: Expression): void {
       switch (current.type) {
+        case AstTypes.Query:
+          traverse((current as QueryExpression).expression);
+          break;
+
         case AstTypes.Condition: {
           const conditionNode = current as ConditionExpression;
-          callback(conditionNode.key, conditionNode);
-          callback(conditionNode.comparator, conditionNode);
-          callback(conditionNode.value, conditionNode);
+          callback(conditionNode, parentNode);
           break;
         }
 
         case AstTypes.Group:
           traverse((current as GroupExpression).expression);
+          break;
+
+        case AstTypes.Not:
+          traverse((current as NotExpression).expression);
           break;
 
         case AstTypes.Boolean: {

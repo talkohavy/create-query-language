@@ -10,7 +10,7 @@ export const TokenTypes = {
   QuotedString: 'QUOTED_STRING',
   Identifier: 'IDENTIFIER', // <--- Either key or value that is pure alphanumeric (with underscores)
   Invalid: 'INVALID',
-  EOF: 'EOF',
+  EndOfLine: 'END_OF_LINE',
 } as const;
 
 type TokenTypesType = typeof TokenTypes;

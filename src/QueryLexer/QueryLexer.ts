@@ -1,12 +1,10 @@
 import type { Token, QueryLexerOptions } from './types';
-import { type BooleanOperatorValues, BooleanOperators } from '../common/constants';
+import { type LogicalOperatorValues, LogicalOperators } from '../logic/constants';
 import { ComparatorBeginnings, SpecialChars, TokenTypes, type TokenTypeValues } from './logic/constants';
 
 export class QueryLexer {
   private input = '';
   private position = 0;
-  private line = 1;
-  private column = 1;
   private options: QueryLexerOptions;
 
   constructor(options: Partial<QueryLexerOptions> = {}) {
@@ -26,7 +24,9 @@ export class QueryLexer {
       }
     }
 
-    tokens.push(this.createToken(TokenTypes.EOF, '', this.position, this.position));
+    tokens.push(this.createToken(TokenTypes.EndOfLine, '', this.position, this.position));
+
+    this.linkTokensAsLinkedList(tokens);
 
     return tokens;
   }
@@ -36,8 +36,20 @@ export class QueryLexer {
    */
   private reset(): void {
     this.position = 0;
-    this.line = 1;
-    this.column = 1;
+  }
+
+  /**
+   * Link tokens as a doubly linked list
+   */
+  private linkTokensAsLinkedList(tokens: Token[]): void {
+    for (let i = 0; i < tokens.length; i++) {
+      const current = tokens[i]!;
+      const previous = i > 0 ? tokens[i - 1]! : null;
+      const next = i < tokens.length - 1 ? tokens[i + 1]! : null;
+
+      current.prev = previous;
+      current.next = next;
+    }
   }
 
   /**
@@ -118,12 +130,9 @@ export class QueryLexer {
     return {
       type,
       value,
-      position: {
-        start,
-        end,
-        line: this.line,
-        column: this.column - (end - start),
-      },
+      position: { start, end },
+      prev: null,
+      next: null,
     };
   }
 
@@ -146,39 +155,26 @@ export class QueryLexer {
     this.advance(); // <--- Skip the opening quote
 
     let valueWithinQuotes = '';
-    let escaped = false;
+    let isEscapedChar = false;
+
+    const escapeSequences: Record<string, string> = {
+      n: '\n',
+      t: '\t',
+      r: '\r',
+      '\\': '\\',
+      '"': '"',
+      "'": "'",
+    };
 
     while (!this.isAtEnd()) {
-      const nextChar = this.currentChar();
+      const currentChar = this.currentChar();
 
-      if (escaped) {
-        // Handle escape sequences
-        switch (nextChar) {
-          case 'n':
-            valueWithinQuotes += '\n';
-            break;
-          case 't':
-            valueWithinQuotes += '\t';
-            break;
-          case 'r':
-            valueWithinQuotes += '\r';
-            break;
-          case '\\':
-            valueWithinQuotes += '\\';
-            break;
-          case '"':
-            valueWithinQuotes += '"';
-            break;
-          case "'":
-            valueWithinQuotes += "'";
-            break;
-          default:
-            valueWithinQuotes += nextChar;
-        }
-        escaped = false;
-      } else if (nextChar === '\\') {
-        escaped = true;
-      } else if (nextChar === openingQuote) {
+      if (isEscapedChar) {
+        valueWithinQuotes += escapeSequences[currentChar] ?? currentChar;
+        isEscapedChar = false;
+      } else if (currentChar === '\\') {
+        isEscapedChar = true;
+      } else if (currentChar === openingQuote) {
         this.advance(); // <--- Skip closing quote
         const quotedStringToken = this.createToken(
           TokenTypes.QuotedString,
@@ -188,7 +184,7 @@ export class QueryLexer {
         );
         return quotedStringToken;
       } else {
-        valueWithinQuotes += nextChar;
+        valueWithinQuotes += currentChar;
       }
 
       this.advance();
@@ -241,9 +237,9 @@ export class QueryLexer {
     const wordValue = this.input.slice(startPosition, this.position);
     const uppercaseValue = (
       this.options.caseSensitiveOperators ? wordValue : wordValue.toUpperCase()
-    ) as BooleanOperatorValues;
+    ) as LogicalOperatorValues;
 
-    if (BooleanOperators[uppercaseValue]) {
+    if (LogicalOperators[uppercaseValue]) {
       const logicalOperatorToken = this.scanLogicalOperator(startPosition, uppercaseValue, wordValue);
       return logicalOperatorToken;
     }
@@ -273,19 +269,11 @@ export class QueryLexer {
   }
 
   /**
-   * Advance position and update line/column tracking
+   * Advance position and update tracking
    */
   private advance(): void {
     if (this.position < this.input.length) {
-      const char = this.input[this.position];
       this.position++;
-
-      if (char === '\n') {
-        this.line++;
-        this.column = 1;
-      } else {
-        this.column++;
-      }
     }
   }
 

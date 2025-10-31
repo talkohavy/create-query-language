@@ -1,12 +1,12 @@
-export const BooleanOperators = {
+export const LogicalOperators = {
   AND: 'AND',
   OR: 'OR',
   NOT: 'NOT',
 } as const;
 
-type TypeofBooleanOperator = typeof BooleanOperators;
-type BooleanOperatorKeys = keyof TypeofBooleanOperator;
-export type BooleanOperatorValues = TypeofBooleanOperator[BooleanOperatorKeys];
+type TypeofLogicalOperator = typeof LogicalOperators;
+type LogicalOperatorKeys = keyof TypeofLogicalOperator;
+export type LogicalOperatorValues = TypeofLogicalOperator[LogicalOperatorKeys];
 
 export const Comparators = {
   '>': '>',

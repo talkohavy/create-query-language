@@ -29,10 +29,10 @@ export class TokenStream {
   }
 
   /**
-   * Consume the current token and expect it to be of the specified type
-   * Throws an error if the token doesn't match
+   * Try & get (Consume) the current token and expect it to be of the specified type
+   * Throws an error if the token type doesn't match.
    */
-  expect(expectedType: TokenTypeValues): Token {
+  tryGetCurrent(expectedType: TokenTypeValues): Token {
     const token = this.current();
 
     if (!token) {
@@ -101,7 +101,7 @@ export class TokenStream {
   isAtEnd(): boolean {
     const token = this.current();
 
-    const isEnd = !token || token.type === TokenTypes.EOF;
+    const isEnd = !token || token.type === TokenTypes.EndOfLine;
 
     return isEnd;
   }

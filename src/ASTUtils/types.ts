@@ -1,5 +1,5 @@
-import type { BooleanOperatorValues, ComparatorValues } from '../common/constants';
-import type { Position } from '../common/types';
+import type { LogicalOperatorValues, ComparatorValues } from '../logic/constants';
+import type { Position } from '../logic/types';
 import { AstTypes } from './logic/constants';
 
 export interface ASTNode {
@@ -31,7 +31,7 @@ export interface ComparatorNode extends ASTNode {
 
 export interface LogicalOperatorNode extends ASTNode {
   type: typeof AstTypes.LogicalOperator;
-  value: BooleanOperatorValues;
+  value: LogicalOperatorValues;
 }
 
 export interface ValueNode extends ASTNode {

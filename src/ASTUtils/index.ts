@@ -1,9 +1,9 @@
 // Main export
-export { ASTBuilder } from './ASTBuilder';
+export { ASTUtils } from './ASTUtils';
 
 // constants
 export { AstTypes } from './logic/constants';
 
-// re-export types
+// types
 export type { AstTypeKeys, AstTypeValues } from './logic/constants';
 export type * from './types';

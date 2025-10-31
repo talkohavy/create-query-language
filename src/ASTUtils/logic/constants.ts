@@ -10,6 +10,6 @@ export const AstTypes = {
   Query: 'query',
 } as const;
 
-type TypOfAstTypes = typeof AstTypes;
-export type AstTypeKeys = keyof TypOfAstTypes;
-export type AstTypeValues = TypOfAstTypes[AstTypeKeys];
+type TypeOfAstTypes = typeof AstTypes;
+export type AstTypeKeys = keyof TypeOfAstTypes;
+export type AstTypeValues = TypeOfAstTypes[AstTypeKeys];
