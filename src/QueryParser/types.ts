@@ -1,4 +1,4 @@
-import type { QueryExpression } from '../ASTBuilder';
+import type { QueryExpression } from '../ASTUtils';
 import type { Position } from '../common/types';
 import type { Token } from '../QueryLexer';
 import type { ContextTypeValues } from './logic/constants';

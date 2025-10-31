@@ -1,4 +1,4 @@
-import { ASTBuilder } from './ASTBuilder';
+import { ASTBuilder } from './ASTUtils';
 import { AstTypes } from './logic/constants';
 
 describe('ASTBuilder', () => {

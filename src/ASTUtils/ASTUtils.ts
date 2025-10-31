@@ -15,7 +15,7 @@ import type {
 } from './types';
 import { AstTypes } from './logic/constants';
 
-export class ASTBuilder {
+export class ASTUtils {
   static createQuery(expression: Expression, position: Position): QueryExpression {
     return {
       type: AstTypes.Query,
