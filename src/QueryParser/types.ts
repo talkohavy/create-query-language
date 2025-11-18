@@ -16,7 +16,6 @@ export type ParseResult = {
 export type ParseError = {
   message: string;
   position: Position;
-  recoverable: boolean;
 };
 
 export type QueryParserOptions = {
