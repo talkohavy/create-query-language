@@ -478,7 +478,6 @@ export class QueryParser implements IQueryParser {
         start: position.start,
         end: position.end,
       },
-      recoverable: true,
     };
 
     // Add error code for programmatic handling
