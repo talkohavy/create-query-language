@@ -46,8 +46,6 @@ export class QueryParser implements IQueryParser {
       // Parse the expression
       const expression = this.parseOrExpression();
 
-      if (!expression) return { success: false, errors: this.errors, tokens };
-
       // Check for unexpected tokens at end
       this.tokenStream.countAndSkipWhitespaces({ expectedTokens: [] });
 
@@ -104,10 +102,8 @@ export class QueryParser implements IQueryParser {
   /**
    * Parse OR expressions (lowest precedence)
    */
-  private parseOrExpression(): Expression | null {
+  private parseOrExpression(): Expression {
     let leftAST = this.parseAndExpression();
-
-    if (!leftAST) return null;
 
     while (this.matchLogicalOperatorOR()) {
       const operatorToken = this.tokenStream.consume()!;
@@ -119,8 +115,6 @@ export class QueryParser implements IQueryParser {
       });
 
       const rightAST = this.parseAndExpression();
-
-      if (!rightAST) return leftAST;
 
       // Create operator node with position information
       const logicalOperatorNode = ASTUtils.createOperator(LogicalOperators.OR, operatorToken.position);
@@ -135,10 +129,8 @@ export class QueryParser implements IQueryParser {
   /**
    * Parse AND expressions (higher precedence than OR)
    */
-  private parseAndExpression(): Expression | null {
+  private parseAndExpression(): Expression {
     let leftAST = this.parseNotExpression();
-
-    if (!leftAST) return null;
 
     const context: TokenContext = { expectedTokens: [ContextTypes.LogicalOperator] };
     if (this.openParenthesisCount > 0) {
@@ -165,12 +157,14 @@ export class QueryParser implements IQueryParser {
           code: ERROR_CODES.MISSING_TOKEN,
         });
 
-        return leftAST;
+        // Return error node as right side
+        const errorNode = ASTUtils.createErrorExpression(ERROR_MESSAGES.EXPECTED_EXPRESSION_AFTER_AND, errorPosition);
+        const logicalOperatorNode = ASTUtils.createOperator(LogicalOperators.AND, operatorToken.position);
+        const leftPosition = ASTUtils.mergePositions(leftAST.position, errorPosition);
+        return ASTUtils.createBooleanExpression(logicalOperatorNode, leftAST, errorNode, leftPosition);
       }
 
       const rightAST = this.parseNotExpression();
-
-      if (!rightAST) return leftAST;
 
       // Create operator node with position information
       const logicalOperatorNode = ASTUtils.createOperator(LogicalOperators.AND, operatorToken.position);
@@ -191,7 +185,7 @@ export class QueryParser implements IQueryParser {
   /**
    * Parse NOT expressions (highest precedence for unary operators)
    */
-  private parseNotExpression(): Expression | null {
+  private parseNotExpression(): Expression {
     this.tokenStream.countAndSkipWhitespaces({
       expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
     });
@@ -217,12 +211,15 @@ export class QueryParser implements IQueryParser {
           code: ERROR_CODES.MISSING_TOKEN,
         });
 
-        return null;
+        // Return error node wrapped in NOT
+        const errorNode = ASTUtils.createErrorExpression(ERROR_MESSAGES.EXPECTED_EXPRESSION_AFTER_NOT, errorPosition);
+
+        const notPosition = ASTUtils.mergePositions(notToken.position, errorPosition);
+
+        return ASTUtils.createNotExpression(errorNode, notPosition);
       }
 
       const expression = this.parsePrimaryExpression();
-
-      if (!expression) return null;
 
       const notPosition = ASTUtils.mergePositions(notToken.position, expression.position);
       const notAST = ASTUtils.createNotExpression(expression, notPosition);
@@ -237,7 +234,7 @@ export class QueryParser implements IQueryParser {
   /**
    * Parse primary expressions (conditions and groups)
    */
-  private parsePrimaryExpression(): Expression | null {
+  private parsePrimaryExpression(): Expression {
     this.tokenStream.countAndSkipWhitespaces({
       expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not],
     });
@@ -258,7 +255,7 @@ export class QueryParser implements IQueryParser {
   /**
    * Parse grouped expression (parentheses)
    */
-  private parseGroupExpression(): Expression | null {
+  private parseGroupExpression(): Expression {
     const startToken = this.tokenStream.tryGetCurrent(TokenTypes.LeftParenthesis);
 
     startToken.context = { expectedTokens: [ContextTypes.Key, ContextTypes.LeftParenthesis, ContextTypes.Not] };
@@ -276,23 +273,16 @@ export class QueryParser implements IQueryParser {
         code: ERROR_CODES.EMPTY_EXPRESSION,
       });
 
-      this.tokenStream.consume(); // consume the closing parenthesis
+      const rightParenthesisToken = this.tokenStream.consume()!; // consume the closing parenthesis
       this.openParenthesisCount--;
 
-      return null;
+      // Return error node for empty parentheses
+      const groupPosition = ASTUtils.mergePositions(startToken.position, rightParenthesisToken.position);
+
+      return ASTUtils.createErrorExpression(ERROR_MESSAGES.EMPTY_PARENTHESES, groupPosition);
     }
 
     const expression = this.parseOrExpression();
-
-    if (!expression) {
-      this.addError({
-        message: ERROR_MESSAGES.EXPECTED_EXPRESSION_IN_PARENTHESES,
-        position: startToken.position,
-        code: ERROR_CODES.MISSING_TOKEN,
-      });
-
-      return null;
-    }
 
     const context: TokenContext = { expectedTokens: [ContextTypes.Comparator] };
     if (this.openParenthesisCount > 1) {
@@ -326,7 +316,7 @@ export class QueryParser implements IQueryParser {
   /**
    * Parse condition expression (key comparator value)
    */
-  private parseCondition(): Expression | null {
+  private parseCondition(): Expression {
     // Expect identifier for key
     const currentToken = this.tokenStream.current()!;
 
@@ -341,7 +331,11 @@ export class QueryParser implements IQueryParser {
         code: ERROR_CODES.MISSING_TOKEN,
       });
 
-      return null;
+      // Return error node with no partial data
+      return ASTUtils.createErrorExpression(
+        ERROR_MESSAGES.EXPECTED_KEY,
+        currentToken?.position || ASTUtils.createPosition(0, 0),
+      );
     }
 
     const keyToken = this.tokenStream.consume()!;
@@ -374,7 +368,13 @@ export class QueryParser implements IQueryParser {
         code: ERROR_CODES.MISSING_TOKEN,
       });
 
-      return null;
+      // Return error node with partial key
+      const keyNode = ASTUtils.createKey(keyToken.value, keyToken.position);
+      return ASTUtils.createErrorExpression(
+        ERROR_MESSAGES.EXPECTED_COMPARATOR,
+        ASTUtils.mergePositions(keyToken.position, token?.position || keyToken.position),
+        { key: keyNode },
+      );
     }
 
     const comparatorToken = this.tokenStream.consume()!;
@@ -395,7 +395,19 @@ export class QueryParser implements IQueryParser {
         code: ERROR_CODES.MISSING_TOKEN,
       });
 
-      return null;
+      // Return error node with partial key and comparator
+      const keyNode = ASTUtils.createKey(keyToken.value, keyToken.position);
+
+      const comparatorNode = ASTUtils.createComparator(
+        comparatorToken.value as ComparatorValues,
+        comparatorToken.position,
+      );
+
+      return ASTUtils.createErrorExpression(
+        ERROR_MESSAGES.EXPECTED_VALUE,
+        ASTUtils.mergePositions(keyToken.position, valueToken?.position || comparatorToken.position),
+        { key: keyNode, comparator: comparatorNode },
+      );
     }
 
     const valueToken = this.tokenStream.consume()!;

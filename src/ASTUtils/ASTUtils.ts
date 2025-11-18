@@ -5,6 +5,7 @@ import type {
   BooleanExpression,
   ComparatorNode,
   ConditionExpression,
+  ErrorExpression,
   Expression,
   GroupExpression,
   KeyNode,
@@ -108,6 +109,18 @@ export class ASTUtils {
     };
   }
 
+  static createErrorExpression(
+    message: string,
+    position: Position,
+    partial?: {
+      key?: KeyNode;
+      comparator?: ComparatorNode;
+      value?: ValueNode;
+    },
+  ): ErrorExpression {
+    return { type: AstTypes.Error, message, position, partial };
+  }
+
   static createPosition(start: number, end: number): Position {
     return { start, end };
   }
@@ -162,6 +175,12 @@ export class ASTUtils {
           const boolNode = current as BooleanExpression;
           traverse(boolNode.left);
           traverse(boolNode.right);
+          break;
+        }
+
+        case AstTypes.Error: {
+          const errorNode = current as ErrorExpression;
+          callback(errorNode, parentNode);
           break;
         }
       }

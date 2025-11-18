@@ -8,6 +8,7 @@ export const AstTypes = {
   Boolean: 'boolean',
   Not: 'not',
   Query: 'query',
+  Error: 'error',
 } as const;
 
 type TypeOfAstTypes = typeof AstTypes;

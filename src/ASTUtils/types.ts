@@ -59,4 +59,20 @@ export interface NotExpression extends ASTNode {
   expression: Expression;
 }
 
-export type Expression = QueryExpression | BooleanExpression | ConditionExpression | GroupExpression | NotExpression;
+export interface ErrorExpression extends ASTNode {
+  type: typeof AstTypes.Error;
+  message: string;
+  partial?: {
+    key?: KeyNode;
+    comparator?: ComparatorNode;
+    value?: ValueNode;
+  };
+}
+
+export type Expression =
+  | QueryExpression
+  | BooleanExpression
+  | ConditionExpression
+  | GroupExpression
+  | NotExpression
+  | ErrorExpression;
