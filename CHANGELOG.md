@@ -1,5 +1,15 @@
 # create-query-language
 
+## 1.2.0
+
+### Minor Changes
+
+- Returning a partial tree on failure to parse. This will allow you to traverse a partially correct tree to know if provided keys are valid.
+
+### Patch Changes
+
+- remove recoverable prop
+
 ## 1.1.1
 
 ### Patch Changes
